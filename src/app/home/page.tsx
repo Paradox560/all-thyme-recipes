@@ -6,6 +6,9 @@ import { Grid, Box, Typography, Button, Stack, Modal, TextField, FormControlLabe
 import Entry from "./entry";
 import { useUser } from "@clerk/nextjs"
 import Navbar from '../components/Navbar';
+import { collection, getDocs, query, getDoc, deleteDoc, setDoc, doc, updateDoc } from "firebase/firestore"
+import { db } from '@/firebase'
+
 
 const oooh_baby = Oooh_Baby({
     weight: '400',
@@ -24,13 +27,21 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
+interface InfoItem {
+    name: string;
+    purchaseDate: string;
+    expirationDate: string;
+}
 
+interface JsonData {
+    info: InfoItem[];
+}
 export default function Page() {
     const [open, setOpen] = useState(false);
     const [ingredient, setIngredient] = useState('');
     const [amount, setAmount] = useState('');
     const [purchaseDate, setPurchaseDate] = useState('');
-    const [data, setData] = useState([]);
+    const [data, setData] = useState<JsonData>();
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
@@ -68,7 +79,28 @@ export default function Page() {
             ]
         }
     `
+   
+    
+    const addItem = async (ingredient:string , amount:string, purchaseDate:string) => {
+        const docRef = doc(collection(db, 'inventory'), user?.id)
+        const docSnap = await getDoc(docRef)
 
+
+        handleSubmit(expirationPrompt, ingredient + " - " + purchaseDate)
+        if (docSnap.exists()) {
+          const ingredients = docSnap.data().ingredients
+          if(ingredient in ingredients) {
+            
+            ingredients[ingredient]= [amount, purchaseDate, data?.info.map(item => item.expirationDate)]
+          }
+           await updateDoc(docRef, {
+            ingredients: ingredients});
+        } else {
+            await updateDoc(docRef, {
+            [`ingredients`]: [amount, purchaseDate, data?.info.map(item => item.expirationDate)]});        }
+    }
+
+    
     const handleSubmit = async (systemPrompt: string, userPrompt: string) => {
         const requestBody = {
             systemPrompt: systemPrompt,
@@ -119,9 +151,9 @@ export default function Page() {
                             >
                                 <Box sx={style} className="text-black">
                                     <h1 className="text-add">New Ingredient</h1>
-                                    <TextField id="standard-basic" label="Ingredient Name" variant="standard" />
-                                    <TextField className="mt-3" id="standard-basic" label="Quantity" variant="standard" />
-                                    <TextField className="mt-3" id="standard-basic" label="Purchase Date (mm/dd)" variant="standard" />
+                                    <TextField id="standard-basic" label="Ingredient Name" variant="standard" onChange={(e) => setIngredient(e.target.value)}/>
+                                    <TextField className="mt-3" id="standard-basic" label="Quantity" variant="standard" onChange={(e) => setAmount(e.target.value)}/>
+                                    <TextField className="mt-3" id="standard-basic" label="Purchase Date (mm/dd)" variant="standard" onChange={(e) => setPurchaseDate(e.target.value)}/>
                                 </Box>
                             </Modal>
                         </Stack>
