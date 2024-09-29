@@ -1,67 +1,223 @@
 'use client'
+import { Oooh_Baby } from "next/font/google";
+import { Typography, Box, Stack, Button } from "@mui/material";
+import Tile from "./tile"
+import Navbar from "../components/Navbar"
 
-import { useUser } from "@clerk/nextjs"
-import { Button } from "@mui/material";
+const oooh_baby = Oooh_Baby({
+    weight: '400',
+    style: 'normal',
+    subsets: ['latin'],
+});
 
 export default function Page() {
-    const { isLoaded, isSignedIn, user } = useUser();
-    const expirationPrompt = `You are a food specialist, you take in the purchase date of each item and return the expiration date of each item from it. Make sure to not skip any items.
-        The "purchaseDate" should be the date that is passed in, and the "expirationDate" should be the estimated expiration date for each product.
-        Make sure to only return one date in the format of mm/dd. If you are unable to find a singular date then return "NaN".
-        You should return in the following JSON format:
-        {
-            info:[
-                {
-                    "name": str,
-                    "purchaseDate": str,
-                    "expirationDate": str
-                }
-            ]
-        }
-        Where name is the name of the product passed in, purchaseDate is the purchaseDate passed in for each product, and the generated expirationDate
-    `
-    const recipePrompt = `
-        You are a food specialist, you take in all of the ingredients and their respective expiration dates and return a list of recipes that can be made with these ingredients.
-        Try to prioritize including the items with the earliest expiration dates but this is not a hard requirement, you can choose from any of the ingredients provided but only these.
-        The "name" should be the name of the meal, the "image" should be the image of the meal in the form of the image address, the "description" should be the description of the meal,
-        the "ingredients" should be the ingredient list for this meal, and finally the "link" is the link to the recipe with steps to make the meal.
-        You should return in the following JSON format:
-        {
-            info:[
-                {
-                    "name": str,
-                    "image": str,
-                    "description": str,
-                    "link": str
-                }
-            ]
-        }
-    `
-
-    const handleSubmit = async (systemPrompt: string, userPrompt: string) => {
-        const requestBody = {
-            systemPrompt: systemPrompt,
-            userPrompt: userPrompt
-        };
-
-        fetch('api/generate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody),
-        })
-        .then((res) => res.json())
-        .then((data) => {
-            console.log(data);
-        })
-    };
-    
-   
     return (
-        <Button sx={{ flex: 1 }} variant='contained' color='primary' onClick={() => handleSubmit(expirationPrompt, 'Eggs - 09/29, Bread - 09/28')} >
-                {' '}
-                Submit
-        </Button>
-    )
+        <div className="min-h-screen full-width bg-themeGreen">
+            <Navbar />
+            <Typography style={{ fontFamily: oooh_baby.style.fontFamily }} className="text-title text-themeCream text-center">Recipes</Typography>
+            <Box 
+                className="mr-10 ml-10 mt-2 rounded-md bg-themeCream text-black"
+                sx={{ 
+                    border: '3px solid #000',
+                    borderRadius: '8px'
+                }}
+            >
+                <Typography variant="h6" className="ml-2 mt-2" textAlign={"center"}>Ingredients and Expiration Dates</Typography>
+                <Box
+                    className="p-2"
+                    sx={{
+                        minHeight: 75,
+                        overflow: 'auto',
+                        flexGrow: 1,
+                    }}
+                >
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            overflowX: 'auto',
+                            whiteSpace: 'nowrap',
+                            padding: '16px',
+                        }}
+                    >
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ minWidth: '100px'}}>
+                            <Stack>
+                                <Typography>Eggs</Typography>
+                                <Typography>09/27</Typography>
+                            </Stack>
+                        </Box>
+                    </Box>
+                </Box>
+            </Box>
+            <Box 
+                className="mr-10 ml-10 mt-4 rounded-md bg-themeCream text-black"
+                sx={{ 
+                    border: '3px solid #000',
+                    borderRadius: '8px',
+                }}
+            >
+                <Typography variant="h6" className="ml-2 mt-2" textAlign={"center"}>Recipes</Typography>
+                <Box
+                    className="p-2"
+                    sx={{
+                        minHeight: 340,
+                        overflow: 'auto',
+                        flexGrow: 1,
+                    }}
+                >
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            overflowX: 'auto',
+                            whiteSpace: 'nowrap',
+                            padding: '0px',
+                        }}
+                    >
+                        <Stack direction="row" className="p-1">
+                            <div className="p-2">
+                                <Tile/>
+                            </div>
+                            <div className="p-2">
+                                <Tile/>
+                            </div>
+                            <div className="p-2">
+                                <Tile/>
+                            </div>
+                            <div className="p-2">
+                                <Tile/>
+                            </div>
+                        </Stack>
+                    </Box>
+                </Box>
+            </Box>
+            <div className="text-center p-3">
+                <Button className="bg-themeCopper text-themeCream text-center">Re-Generate Additional Recipes</Button>
+            </div>
+        </div>
+    );
 }
