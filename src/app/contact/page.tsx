@@ -35,7 +35,7 @@ const teamMembers = [
     },
 ];
 
-export default function Page() {
+export default function Contact() {
     return (
     <Box
         width="100vw"
