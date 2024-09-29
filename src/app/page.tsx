@@ -15,22 +15,56 @@ export default function Home() {
         const docRef = doc(collectionRef, user?.id);
         const docSnap = await getDoc(docRef);
     
-        if(docSnap.exists()){
-            // console.log("User already exists in db: " + docSnap);
-            console.log("User already exists in db.");
-          } else {
-            console.log("User does not exist in db. Creating a new user in db.");
+      if (docSnap.exists()) {
+        // console.log("User already exists in db: " + docSnap);
+        console.log("User already exists in db.");
+      } else {
+        console.log("User does not exist in db. Creating a new user in db.");
 
-            // Add a new document with a generated id.
-            await setDoc(docRef, {
-                firstName: user?.firstName,
-                lastName: user?.lastName,
-                email: user?.primaryEmailAddress?.emailAddress,
-                userImage: user?.imageUrl,
-                ingredients: {},
-                isActive: false,
-            })
-        }
+        // Add a new document with a generated id.
+        await setDoc(docRef, {
+          firstName: user?.firstName,
+          lastName: user?.lastName,
+          email: user?.primaryEmailAddress?.emailAddress,
+          userImage: user?.imageUrl,
+          ingredients: {},
+          isActive: false,
+          spices: {
+            "Salt": false,
+            "Black Pepper": false,
+            "Garlic Powder": false,
+            "Onion Powder": false,
+            "Paprika": false,
+            "Chili Powder": false,
+            "Cumin": false,
+            "Cinnamon": false,
+            "Nutmeg": false,
+            "Ginger": false,
+            "Oregano": false,
+            "Thyme": false,
+            "Basil": false,
+            "Rosemary": false,
+            "Sage": false,
+            "Bay Leaves": false,
+            "Turmeric": false,
+            "Coriander": false,
+            "Cayenne Pepper": false,
+            "Red Pepper Flakes": false,
+            "Parsley": false,
+            "Dill": false,
+            "Mustard Seeds": false,
+            "Cloves": false,
+            "Cardamom": false,
+            "Fennel Seeds": false,
+            "Allspice": false,
+            "Curry Powder": false,
+            "Tarragon": false,
+            "White Pepper": false,
+            "Saffron": false,
+            "Celery Seed": false
+          }
+        })
+      }
 
     } catch (error: unknown) {
       console.error("Error adding user to db: " + error);
