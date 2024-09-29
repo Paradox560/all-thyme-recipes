@@ -1,5 +1,3 @@
-"use client";
-
 import {useState} from 'react'
 import {Grid, Box, Typography, Button, Stack, IconButton, Modal} from "@mui/material"
 import DeleteIcon from '@mui/icons-material/Delete'
