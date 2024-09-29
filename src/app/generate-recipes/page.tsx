@@ -1,3 +1,5 @@
+'use client'
+
 export default function Page() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const expirationPrompt = `You are a food specialist, you take in the purchase date of each item and return the expiration date of each item from it. Make sure to not skip any items.
