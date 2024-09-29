@@ -5,7 +5,6 @@ import { useUser } from '@clerk/nextjs';
 import { collection, doc, getDoc, getDocs, setDoc, query, where } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useEffect } from "react";
-import '@/app/globals.css'
 import { Parisienne } from "next/font/google";
 import { Marck_Script } from "next/font/google";
 import {Jost} from "next/font/google";
