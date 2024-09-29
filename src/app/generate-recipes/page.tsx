@@ -2,6 +2,7 @@
 import { Oooh_Baby } from "next/font/google";
 import { Typography, Box, Stack, Button } from "@mui/material";
 import Tile from "./tile"
+import Navbar from "../components/Navbar"
 
 const oooh_baby = Oooh_Baby({
     weight: '400',
@@ -12,9 +13,10 @@ const oooh_baby = Oooh_Baby({
 export default function Page() {
     return (
         <div className="min-h-screen full-width bg-themeGreen">
+            <Navbar />
             <Typography style={{ fontFamily: oooh_baby.style.fontFamily }} className="text-title text-themeCream text-center">Recipes</Typography>
             <Box 
-                className="mr-10 ml-10 mt-10 rounded-md bg-themeCream text-black"
+                className="mr-10 ml-10 mt-2 rounded-md bg-themeCream text-black"
                 sx={{ 
                     border: '3px solid #000',
                     borderRadius: '8px'
@@ -24,7 +26,7 @@ export default function Page() {
                 <Box
                     className="p-2"
                     sx={{
-                        minHeight: 100,
+                        minHeight: 75,
                         overflow: 'auto',
                         flexGrow: 1,
                     }}
@@ -173,7 +175,7 @@ export default function Page() {
                 </Box>
             </Box>
             <Box 
-                className="mr-10 ml-10 mt-10 rounded-md bg-themeCream text-black"
+                className="mr-10 ml-10 mt-4 rounded-md bg-themeCream text-black"
                 sx={{ 
                     border: '3px solid #000',
                     borderRadius: '8px',
@@ -183,7 +185,7 @@ export default function Page() {
                 <Box
                     className="p-2"
                     sx={{
-                        minHeight: 300,
+                        minHeight: 340,
                         overflow: 'auto',
                         flexGrow: 1,
                     }}
@@ -193,7 +195,7 @@ export default function Page() {
                             display: 'flex',
                             overflowX: 'auto',
                             whiteSpace: 'nowrap',
-                            padding: '16px',
+                            padding: '0px',
                         }}
                     >
                         <Stack direction="row" className="p-1">

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Oooh_Baby } from "next/font/google";
 import { Grid, Box, Typography, Button, Stack, Modal, TextField, FormControlLabel, Checkbox } from "@mui/material";
 import Entry from "./entry";
+import Navbar from '../components/Navbar';
 
 const oooh_baby = Oooh_Baby({
     weight: '400',
@@ -30,6 +31,7 @@ export default function Page() {
 
     return (
         <div className="min-h-screen full-width bg-themeGreen">
+            <Navbar />
             <Typography style={{ fontFamily: oooh_baby.style.fontFamily }} className="text-title text-themeCream text-center">Home</Typography>
             <Grid container spacing={2} sx={{ height: '100%' }}>
                 <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>

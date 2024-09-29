@@ -4,7 +4,7 @@ export default function Tile() {
     return (
         <Box 
             className="bg-themeBlue rounded-md text-black p-2"
-            minHeight={250} 
+            minHeight={290} 
             maxHeight={250} 
             minWidth={375} 
             maxWidth={375} 
