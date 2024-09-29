@@ -9,9 +9,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        themeRed: "#860F09",
+        themeGreen: "#3D5926",
+        themeCopper: "#B37238",
+        themeBlue: "#89BB98",
+        themeCream: "#FDEDD6"
       },
+      fontSize: {
+        title: '5rem',
+        add: '1.5rem'
+      },  
     },
   },
   plugins: [],
