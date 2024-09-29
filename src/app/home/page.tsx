@@ -40,7 +40,7 @@ export default function Page() {
     const [open, setOpen] = useState(false);
     const [ingredient, setIngredient] = useState('');
     const [amount, setAmount] = useState('');
-    const [purchaseDate, setPurchaseDate] = useState('');
+    const [purchaseDate, setPurchaseDate] = useState<string>('');
     const [data, setData] = useState<JsonData>();
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -153,7 +153,8 @@ export default function Page() {
                                     <h1 className="text-add">New Ingredient</h1>
                                     <TextField id="standard-basic" label="Ingredient Name" variant="standard" onChange={(e) => setIngredient(e.target.value)}/>
                                     <TextField className="mt-3" id="standard-basic" label="Quantity" variant="standard" onChange={(e) => setAmount(e.target.value)}/>
-                                    <TextField className="mt-3" id="standard-basic" label="Purchase Date (mm/dd)" variant="standard" onChange={(e) => setPurchaseDate(e.target.value)}/>
+                                    <TextField className="mt-3" id="standard-basic" label="Purchase Date (mm/dd)" variant="standard" onChange={(e) => setPurchaseDate(e.target.value)} />
+                                    <Button onClick={() => addItem(ingredient, amount, purchaseDate)} autoFocus>Add</Button>
                                 </Box>
                             </Modal>
                         </Stack>

@@ -1,7 +1,6 @@
 'use client'
 
-import { SignedOut, SignedIn, UserButton } from "@clerk/nextjs";
-import { useUser } from '@clerk/nextjs'; 
+import { SignedOut, SignedIn, UserButton, useUser } from "@clerk/nextjs";
 import { collection, doc, getDoc, getDocs, setDoc, query, where } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useEffect } from "react";
@@ -26,7 +25,6 @@ export default function Home() {
           firstName: user?.firstName,
           lastName: user?.lastName,
           email: user?.primaryEmailAddress?.emailAddress,
-          userImage: user?.imageUrl,
           ingredients: {},
           isActive: false,
           spices: {
@@ -73,9 +71,11 @@ export default function Home() {
 
   useEffect(() => {
       if(isSignedIn && isLoaded && user){
-          createUser();
+        createUser();
+      } else {
+        console.log("Parameters not met to create" + isSignedIn + " " + user);
       }
-  }, [isSignedIn, user]);
+  }, [isSignedIn, isLoaded, user]);
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
