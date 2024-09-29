@@ -4,12 +4,18 @@ import { Oooh_Baby } from "next/font/google";
 import { Typography, Box, Stack, Button } from "@mui/material";
 import Tile from "./tile";
 import Navbar from "../components/Navbar";
+import { Jost } from "next/font/google";
 
 const oooh_baby = Oooh_Baby({
     weight: '400',
     style: 'normal',
     subsets: ['latin'],
 });
+
+const jost = Jost({
+    weight: ['400'],
+    subsets: ['latin'],
+  })
 
 export default function Page() {
     const [showRecipes, setShowRecipes] = useState(false);
@@ -19,10 +25,10 @@ export default function Page() {
     };
 
     return (
-        <div style={{ minHeight: '100vh', width: '100%', backgroundColor: '#3D5926' }}>
+        <div style={{ minHeight: '100vh', width: '100%', backgroundColor: '#3D5926', fontFamily: jost.style.fontFamily }}>
             <Navbar />
             <Typography 
-                style={{ fontFamily: oooh_baby.style.fontFamily, color: '#f0e68c', textAlign: 'center', fontSize: '60px' }}
+                style={{ fontFamily: oooh_baby.style.fontFamily, color: '#f0e68c', textAlign: 'center', fontSize: '60px',  }}
             >
                 Recipes
             </Typography>
@@ -37,7 +43,7 @@ export default function Page() {
                     borderRadius: '8px'
                 }}
             >
-                <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', textAlign: 'center' }}>
+                <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', textAlign: 'center', fontFamily: jost.style.fontFamily}}>
                     Ingredients and Expiration Dates
                 </Typography>
 
@@ -107,7 +113,8 @@ export default function Page() {
                             sx={{ 
                                 backgroundColor: '#B37238',
                                 color: '#FDEDD6',
-                                '&:hover': { backgroundColor: '#9e5e24' } 
+                                fontFamily: jost.style.fontFamily,
+                                '&:hover': { backgroundColor: '#9e5e24', } 
                             }} 
                             onClick={handleClick}
                         >
@@ -117,6 +124,7 @@ export default function Page() {
                             sx={{ 
                                 backgroundColor: '#B37238',
                                 color: '#FDEDD6',
+                                fontFamily: jost.style.fontFamily,
                                 '&:hover': { backgroundColor: '#9e5e24' } 
                             }} 
                             onClick={handleClick}

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Oooh_Baby } from "next/font/google";
+import { Jost } from "next/font/google";
 import { Grid, Box, Typography, Button, Stack, Modal, TextField, FormControlLabel, Checkbox } from "@mui/material";
 import Entry from "./entry";
 import { useUser } from "@clerk/nextjs"
@@ -13,6 +14,11 @@ const oooh_baby = Oooh_Baby({
     style: 'normal',
     subsets: ['latin'],
 });
+
+const jost = Jost({
+    weight: ['400'],
+    subsets: ['latin'],
+  })
 
 const style = {
     position: 'absolute',
@@ -116,13 +122,14 @@ export default function Page() {
                             flexDirection: 'column',
                             minHeight: '350px',
                             border: '3px solid #000',
-                            padding: '16px'
+                            padding: '16px',
+                            fontFamily: jost.style.fontFamily
                         }}
                     >
                         <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', borderBottom: '0.15rem solid black'}}>Step 1: List of Ingredients</Typography>
+                            <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', borderBottom: '0.15rem solid black', fontFamily: jost.style.fontFamily}}>Step 1: List of Ingredients</Typography>
                             <Button
-                                sx={{ marginRight: '8px', marginTop: '8px', backgroundColor: '#B87333', color: 'white' }}
+                                sx={{ marginRight: '8px', marginTop: '8px', backgroundColor: '#B87333', color: 'white', fontFamily: jost.style.fontFamily }}
                                 onClick={handleOpen}
                             >
                                 ADD INGREDIENT
@@ -171,7 +178,7 @@ export default function Page() {
                             padding: '16px'
                         }}
                     >
-                        <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', borderBottom: '0.15rem solid black', width:'17rem' }}>Step 2: Spices & Seasonings</Typography>
+                        <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', borderBottom: '0.15rem solid black', width:'17rem', fontFamily: jost.style.fontFamily }}>Step 2: Spices & Seasonings</Typography>
                         <Box sx={{ minHeight: 350, overflow: 'auto', flexGrow: 1, padding: '16px' }}>
                             <Grid container spacing={4}>
                                 <Grid item xs={12} md={3}>
@@ -225,7 +232,7 @@ export default function Page() {
             </Grid>
             <Stack direction="row" justifyContent="space-evenly" spacing={1}>
                 <Link href="/generate-recipes">
-                    <Button sx={{ marginRight: '8px', marginTop: '30px', backgroundColor: '#B87333', color: 'white', minHeight: '4rem', minWidth: '7rem'}}>
+                    <Button sx={{ marginRight: '8px', marginTop: '30px', backgroundColor: '#B87333', color: 'white', minHeight: '4rem', minWidth: '7rem', fontFamily: jost.style.fontFamily}}>
                         Step 3
                     </Button>
                 </Link>
