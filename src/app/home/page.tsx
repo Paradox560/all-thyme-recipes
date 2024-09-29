@@ -32,7 +32,6 @@ export default function Page() {
         <div className="min-h-screen full-width bg-themeGreen">
             <Typography style={{ fontFamily: oooh_baby.style.fontFamily }} className="text-title text-themeCream text-center">Home</Typography>
             <Grid container spacing={2} sx={{ height: '100%' }}>
-                {/* First Grid Item */}
                 <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <Box 
                         className="ml-10 rounded-md bg-themeCream text-black" 
@@ -78,7 +77,6 @@ export default function Page() {
                     </Box>
                 </Grid>
 
-                {/* Second Grid Item */}
                 <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <Box 
                         className="mr-10 rounded-md bg-themeCream text-black" 
