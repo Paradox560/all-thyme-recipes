@@ -6,11 +6,11 @@ export default function SignInPage() {
         <Box>
             <AppBar 
                 position="static"
-                left={0}
-                top={0}
                 sx={{
                     width: '100vw',
                     backgroundColor: '#62C4E1',
+                    left: 0,
+                    top: 0
                 }}
             >
                 <Toolbar
