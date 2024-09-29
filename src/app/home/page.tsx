@@ -58,7 +58,6 @@ export default function Page() {
                                     <TextField id="standard-basic" label="Ingredient Name" variant="standard" />
                                     <TextField className="mt-3" id="standard-basic" label="Quantity" variant="standard" />
                                     <TextField className="mt-3" id="standard-basic" label="Purchase Date (mm/dd)" variant="standard" />
-                                    <Button>esrjgserj</Button>
                                 </Box>
                             </Modal>
                         </Stack>
