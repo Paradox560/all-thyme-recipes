@@ -9,7 +9,7 @@ export default function SignInPage() {
                     position="static"
                     sx={{
                         width: '100vw',
-                        backgroundColor: '#62C4E1',
+                        backgroundColor: '#B37238',
                         left: 0,
                         top: 0
                     }}

@@ -13,7 +13,7 @@ export default function ButtonAppBar() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{backgroundColor: '#B37238', height: 60}} >
         <Toolbar sx={{alignItems: "center"}} >
-          <Button href="/page" color="inherit">Home</Button>
+          <Button href="/home" color="inherit">Home</Button>
           <Button color="inherit" sx={{marginLeft: 160}} >Logout</Button>
         </Toolbar>
       </AppBar>
