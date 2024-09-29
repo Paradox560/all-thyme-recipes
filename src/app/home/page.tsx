@@ -119,9 +119,9 @@ export default function Page() {
                             >
                                 <Box sx={style} className="text-black">
                                     <h1 className="text-add">New Ingredient</h1>
-                                    <TextField id="standard-basic" label="Ingredient Name" variant="standard" />
-                                    <TextField className="mt-3" id="standard-basic" label="Quantity" variant="standard" />
-                                    <TextField className="mt-3" id="standard-basic" label="Purchase Date (mm/dd)" variant="standard" />
+                                    <TextField id="standard-basic" label="Ingredient Name" variant="standard" onChange={(e) => setIngredient(e.target.value)}/>
+                                    <TextField className="mt-3" id="standard-basic" label="Quantity" variant="standard" onChange={(e) => setAmount(e.target.value)}/>
+                                    <TextField className="mt-3" id="standard-basic" label="Purchase Date (mm/dd)" variant="standard" onChange={(e) => setPurchaseDate(e.target.value)}/>
                                 </Box>
                             </Modal>
                         </Stack>
