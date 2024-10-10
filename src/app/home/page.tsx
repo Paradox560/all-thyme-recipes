@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Oooh_Baby } from "next/font/google";
-import { Grid, Box, Typography, Button, Stack, Modal, TextField, FormControlLabel, Checkbox } from "@mui/material";
+import { Jost } from "next/font/google";
+import { Grid, Box, Typography, Button, Stack, Modal, TextField, FormControlLabel, Checkbox, IconButton } from "@mui/material";
 import Entry from "./entry";
 import { useUser } from "@clerk/nextjs"
 import Navbar from '../components/Navbar';
+import DeleteIcon from '@mui/icons-material/Delete'
 import { collection, getDocs, query, getDoc, deleteDoc, setDoc, doc, updateDoc } from "firebase/firestore"
 import { db } from '@/firebase'
 
@@ -16,6 +18,11 @@ const oooh_baby = Oooh_Baby({
     style: 'normal',
     subsets: ['latin'],
 });
+
+const jost = Jost({
+    weight: ['400'],
+    subsets: ['latin'],
+  })
 
 const style = {
     position: 'absolute',
@@ -148,13 +155,14 @@ export default function Page() {
                             flexDirection: 'column',
                             minHeight: '350px',
                             border: '3px solid #000',
-                            padding: '16px'
+                            padding: '16px',
+                            fontFamily: jost.style.fontFamily
                         }}
                     >
                         <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', borderBottom: '0.15rem solid black'}}>Step 1: List of Ingredients</Typography>
+                            <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', borderBottom: '0.15rem solid black', fontFamily: jost.style.fontFamily}}>Step 1: List of Ingredients</Typography>
                             <Button
-                                sx={{ marginRight: '8px', marginTop: '8px', backgroundColor: '#B87333', color: 'white' }}
+                                sx={{ marginRight: '8px', marginTop: '8px', backgroundColor: '#B87333', color: 'white', fontFamily: jost.style.fontFamily }}
                                 onClick={handleOpen}
                             >
                                 ADD INGREDIENT
@@ -182,8 +190,52 @@ export default function Page() {
                                 padding: '16px'
                             }}
                         >
-                            <Entry />
-                            <Entry />
+                                    <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
+            <Typography className="pt-1.5">2 lbs Chicken Breast</Typography>
+            <Stack direction="row">
+                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
+                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
+            </Stack>
+        </Stack>
+                                    <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
+            <Typography className="pt-1.5">3 Green Bell Peppers</Typography>
+            <Stack direction="row">
+                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
+                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
+            </Stack>
+        </Stack>
+
+        <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
+            <Typography className="pt-1.5">1 can of corn</Typography>
+            <Stack direction="row">
+                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
+                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
+            </Stack>
+        </Stack>
+
+        <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
+            <Typography className="pt-1.5">3 onions</Typography>
+            <Stack direction="row">
+                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
+                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
+            </Stack>
+        </Stack>
+
+        <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
+            <Typography className="pt-1.5">12 oz steak</Typography>
+            <Stack direction="row">
+                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
+                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
+            </Stack>
+        </Stack>
+
+        <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
+            <Typography className="pt-1.5">1 sack of potatoes</Typography>
+            <Stack direction="row">
+                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
+                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
+            </Stack>
+        </Stack>
                             <Entry />
                         </Box>
                     </Box>
@@ -204,7 +256,7 @@ export default function Page() {
                             padding: '16px'
                         }}
                     >
-                        <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', borderBottom: '0.15rem solid black', width:'17rem' }}>Step 2: Spices & Seasonings</Typography>
+                        <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', borderBottom: '0.15rem solid black', width:'17rem', fontFamily: jost.style.fontFamily }}>Step 2: Spices & Seasonings</Typography>
                         <Box sx={{ minHeight: 350, overflow: 'auto', flexGrow: 1, padding: '16px' }}>
                             <Grid container spacing={4}>
                                 <Grid item xs={12} md={3}>
@@ -258,7 +310,7 @@ export default function Page() {
             </Grid>
             <Stack direction="row" justifyContent="space-evenly" spacing={1}>
                 <Link href="/generate-recipes">
-                    <Button sx={{ marginRight: '8px', marginTop: '30px', backgroundColor: '#B87333', color: 'white', minHeight: '4rem', minWidth: '7rem'}}>
+                    <Button sx={{ marginRight: '8px', marginTop: '30px', backgroundColor: '#B87333', color: 'white', minHeight: '4rem', minWidth: '8rem', fontFamily: jost.style.fontFamily, fontSize: "1.5rem"}}>
                         Step 3
                     </Button>
                 </Link>

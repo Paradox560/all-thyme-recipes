@@ -1,7 +1,19 @@
 import * as React from 'react';
 import { AppBar, Box, Toolbar, Typography, Button, IconButton, Stack} from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu';
+import { Jost, Oooh_Baby } from 'next/font/google';
 import { UserButton } from '@clerk/nextjs';
+
+const oooh_baby = Oooh_Baby({
+  weight: '400',
+  style: 'normal',
+  subsets: ['latin'],
+});
+
+const jost = Jost({
+  weight: ['300','400','500','600'],
+  subsets: ['latin'],
+})
 
 
 export default function ButtonAppBar() {
