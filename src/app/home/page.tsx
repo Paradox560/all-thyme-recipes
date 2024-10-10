@@ -63,6 +63,7 @@ export default function Page() {
         }
         Where name is the name of the product passed in, purchaseDate is the purchaseDate passed in for each product, and the generated expirationDate
     `
+    
     const recipePrompt = `
         You are a food specialist, you take in all of the ingredients and their respective expiration dates and return a list of recipes that can be made with these ingredients.
         Try to prioritize including the items with the earliest expiration dates but this is not a hard requirement, you can choose from any of the ingredients provided but only these.
@@ -85,7 +86,6 @@ export default function Page() {
     const addItem = async (ingredient:string , amount:string, purchaseDate:string) => {
         const docRef = doc(collection(db, 'inventory'), user?.id)
         const docSnap = await getDoc(docRef)
-
 
         handleSubmit(expirationPrompt, ingredient + " - " + purchaseDate)
         if (docSnap.exists()) {
