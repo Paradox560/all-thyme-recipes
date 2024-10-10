@@ -229,7 +229,7 @@ export default function Page() {
             <Stack justifyContent={"space-between"}>
                 <Typography style={{marginTop: "-2.7rem", fontFamily: jost.style.fontFamily, fontWeight: 400, fontSize: "1.3rem"}} >Beef and Potato Hash</Typography>
                 <img src="/beef-and-potato.jpg"></img>
-                <Typography>Description: A beef and potato hash is a savory dish made by sautéing ground beef with diced, crispy potatoes, onions, and bell peppers until everything is tender and golden brown. The flavors blend together to create a hearty, flavorful meal that's perfect for breakfast or dinner.</Typography>
+                <Typography>Description: A beef and potato hash is a savory dish made by sautéing ground beef with diced, crispy potatoes, onions, and bell peppers until everything is tender and golden brown. The flavors blend together to create a hearty, flavorful meal that is perfect for breakfast or dinner.</Typography>
                 <Typography>Link: https://busycooks.com/ground-beef-potato-hash/</Typography>
             </Stack>
         </Box>
