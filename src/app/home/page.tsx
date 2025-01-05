@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Oooh_Baby } from "next/font/google";
 import { Jost } from "next/font/google";
@@ -11,7 +11,6 @@ import Navbar from '../components/Navbar';
 import DeleteIcon from '@mui/icons-material/Delete'
 import { collection, getDocs, query, getDoc, deleteDoc, setDoc, doc, updateDoc } from "firebase/firestore"
 import { db } from '@/firebase'
-
 
 const oooh_baby = Oooh_Baby({
     weight: '400',
@@ -44,6 +43,13 @@ interface InfoItem {
 interface JsonData {
     info: InfoItem[];
 }
+
+interface IngredientData {
+    amount: string;
+    purchaseDate: string;
+    expirationDate: string;
+}
+
 export default function Page() {
     const [open, setOpen] = useState(false);
     const [ingredient, setIngredient] = useState('');
@@ -52,6 +58,8 @@ export default function Page() {
     const [data, setData] = useState<JsonData>();
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+    const [ingredients, setIngredients] = useState<Record<string, IngredientData>>({});
+    const [spiceStates, setSpiceStates] = useState<{ [key: string]: boolean }>({});
 
     const { isLoaded, isSignedIn, user } = useUser();
 
@@ -88,44 +96,95 @@ export default function Page() {
             ]
         }
     `
-   
-    
-    const addItem = async (ingredient:string , amount:string, purchaseDate:string) => {
-        const docRef = doc(collection(db, 'inventory'), user?.id)
-        const docSnap = await getDoc(docRef)
 
-        handleSubmit(expirationPrompt, ingredient + " - " + purchaseDate)
-        if (docSnap.exists()) {
-          const ingredients = docSnap.data().ingredients
-          if(ingredient in ingredients) {
-            
-            ingredients[ingredient]= [amount, purchaseDate, data?.info.map(item => item.expirationDate)]
-          }
-           await updateDoc(docRef, {
-            ingredients: ingredients});
-        } else {
-            await updateDoc(docRef, {
-            [`ingredients`]: [amount, purchaseDate, data?.info.map(item => item.expirationDate)]});        }
-    }
+    useEffect(() => {
+        const fetchIngredients = async () => {
+            if (!isLoaded || !isSignedIn || !user) {
+                return;
+            }
 
-    
+            const docRef = doc(collection(db, 'users'), user?.id);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                setIngredients(docSnap.data().ingredients || {});
+            }
+
+            if (docSnap.exists() && docSnap.data().spices) {
+                setSpiceStates(docSnap.data().spices);
+            }
+        };
+
+        fetchIngredients();
+    }, []);
+
+    const handleSpiceChange = (spiceName: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSpiceStates(prev => ({
+            ...prev,
+            [spiceName]: event.target.checked
+        }));
+    };
+
+    const updateSpices = async () => {
+        const docRef = doc(collection(db, 'users'), user?.id);
+        await updateDoc(docRef, { spices: spiceStates });
+    };
+
+    const handleIngredientChange = (ingredient: string, data: IngredientData) => {
+        setIngredients(prev => ({
+            ...prev,
+            [ingredient]: data
+        }));
+    };
+
+    const removeIngredient = async (ingredient: string) => {
+        const docRef = doc(collection(db, 'users'), user?.id);
+        const newIngredients = { ...ingredients };
+        delete newIngredients[ingredient];
+        
+        setIngredients(newIngredients);
+        await updateDoc(docRef, { ingredients: newIngredients });
+    };
+
+    const addItem = async (ingredient: string, amount: string, purchaseDate: string) => {
+        const docRef = doc(collection(db, 'users'), user?.id);
+        const expirationData = await handleSubmit(expirationPrompt, ingredient + " - " + purchaseDate);
+        const expirationDate = expirationData?.info[0]?.expirationDate || '';
+        
+        const newIngredient = {
+            amount,
+            purchaseDate,
+            expirationDate
+        };
+        
+        handleIngredientChange(ingredient, newIngredient);
+        await updateDoc(docRef, { 
+            ingredients: {
+                ...ingredients,
+                [ingredient]: newIngredient
+            }
+        });
+
+        handleClose();
+    };
+
     const handleSubmit = async (systemPrompt: string, userPrompt: string) => {
         const requestBody = {
             systemPrompt: systemPrompt,
             userPrompt: userPrompt
         };
 
-        fetch('api/generate', {
+        const response = await fetch('api/generate', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(requestBody),
-        })
-        .then((res) => res.json())
-        .then((data) => {
-            setData(data);
-        })
+        });
+
+        const data = await response.json();
+        setData(data);
+        return data;
     };
 
     return (
@@ -174,11 +233,13 @@ export default function Page() {
                                 aria-describedby="modal-modal-description"
                             >
                                 <Box sx={style} className="text-black">
-                                    <h1 className="text-add">New Ingredient</h1>
-                                    <TextField id="standard-basic" label="Ingredient Name" variant="standard" onChange={(e) => setIngredient(e.target.value)}/>
-                                    <TextField className="mt-3" id="standard-basic" label="Quantity" variant="standard" onChange={(e) => setAmount(e.target.value)}/>
-                                    <TextField className="mt-3" id="standard-basic" label="Purchase Date (mm/dd)" variant="standard" onChange={(e) => setPurchaseDate(e.target.value)} />
-                                    <Button onClick={() => addItem(ingredient, amount, purchaseDate)} autoFocus>Add</Button>
+                                    <Stack direction="column" spacing={2}>
+                                        <h1 className="text-add text-center">New Ingredient</h1>
+                                        <TextField id="standard-basic" label="Ingredient Name" variant="standard" onChange={(e) => setIngredient(e.target.value)}/>
+                                        <TextField className="mt-3" id="standard-basic" label="Quantity" variant="standard" onChange={(e) => setAmount(e.target.value)}/>
+                                        <TextField className="mt-3" id="standard-basic" label="Purchase Date (mm/dd)" variant="standard" onChange={(e) => setPurchaseDate(e.target.value)} />
+                                        <Button variant="contained" onClick={() => addItem(ingredient, amount, purchaseDate)} autoFocus>Add</Button>
+                                    </Stack>
                                 </Box>
                             </Modal>
                         </Stack>
@@ -190,53 +251,25 @@ export default function Page() {
                                 padding: '16px'
                             }}
                         >
-                                    <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
-            <Typography className="pt-1.5">2 lbs Chicken Breast</Typography>
-            <Stack direction="row">
-                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
-                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
-            </Stack>
-        </Stack>
-                                    <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
-            <Typography className="pt-1.5">3 Green Bell Peppers</Typography>
-            <Stack direction="row">
-                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
-                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
-            </Stack>
-        </Stack>
-
-        <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
-            <Typography className="pt-1.5">1 can of corn</Typography>
-            <Stack direction="row">
-                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
-                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
-            </Stack>
-        </Stack>
-
-        <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
-            <Typography className="pt-1.5">3 onions</Typography>
-            <Stack direction="row">
-                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
-                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
-            </Stack>
-        </Stack>
-
-        <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
-            <Typography className="pt-1.5">12 oz steak</Typography>
-            <Stack direction="row">
-                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
-                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
-            </Stack>
-        </Stack>
-
-        <Stack direction="row" justifyContent={"space-between"} borderBottom={""}>
-            <Typography className="pt-1.5">1 sack of potatoes</Typography>
-            <Stack direction="row">
-                <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">Date Purchased: September 17th</Typography>
-                <IconButton aria-label="delete"> <DeleteIcon /> </IconButton>
-            </Stack>
-        </Stack>
-                            <Entry />
+                            {Object.entries(ingredients).map(([ingredient, data]) => (
+                                <Stack key={ingredient} direction="row" justifyContent={"space-between"} borderBottom={""}>
+                                    <Typography className="pt-1.5">{data.amount} {ingredient}</Typography>
+                                    <Stack direction="row">
+                                        <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">
+                                            Date Purchased: {data.purchaseDate}
+                                        </Typography>
+                                        <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">
+                                            Expiration Date: {data.expirationDate}
+                                        </Typography>
+                                        <IconButton 
+                                            aria-label="delete" 
+                                            onClick={() => removeIngredient(ingredient)}
+                                        > 
+                                            <DeleteIcon /> 
+                                        </IconButton>
+                                    </Stack>
+                                </Stack>
+                            ))}
                         </Box>
                     </Box>
                 </Grid>
@@ -256,51 +289,283 @@ export default function Page() {
                             padding: '16px'
                         }}
                     >
-                        <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', borderBottom: '0.15rem solid black', width:'17rem', fontFamily: jost.style.fontFamily }}>Step 2: Spices & Seasonings</Typography>
+                        <Stack direction="row" justifyContent="space-between">
+                            <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', borderBottom: '0.15rem solid black', width: '17rem', fontFamily: jost.style.fontFamily }}>Step 2: Spices & Seasonings</Typography>
+                            <Button
+                                sx={{ marginRight: '8px', marginTop: '8px', backgroundColor: '#B87333', color: 'white', fontFamily: jost.style.fontFamily }}
+                                onClick={updateSpices}
+                            >
+                                Update Spices
+                            </Button>
+                        </Stack>
                         <Box sx={{ minHeight: 350, overflow: 'auto', flexGrow: 1, padding: '16px' }}>
                             <Grid container spacing={4}>
                                 <Grid item xs={12} md={3}>
                                     <Stack>
-                                        <FormControlLabel control={<Checkbox />} label="Salt" />
-                                        <FormControlLabel control={<Checkbox />} label="Black Pepper" />
-                                        <FormControlLabel control={<Checkbox />} label="Garlic Powder" />
-                                        <FormControlLabel control={<Checkbox />} label="Onion Powder" />
-                                        <FormControlLabel control={<Checkbox />} label="Paprika" />
-                                        <FormControlLabel control={<Checkbox />} label="Chili Powder" />
-                                        <FormControlLabel control={<Checkbox />} label="Cumin" />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Salt"] || false}
+                                                    onChange={handleSpiceChange("Salt")}
+                                                />
+                                            } 
+                                            label="Salt" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Black Pepper"] || false}
+                                                    onChange={handleSpiceChange("Black Pepper")}
+                                                />
+                                            } 
+                                            label="Black Pepper" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Garlic Powder"] || false}
+                                                    onChange={handleSpiceChange("Garlic Powder")}
+                                                />
+                                            } 
+                                            label="Garlic Powder" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Onion Powder"] || false}
+                                                    onChange={handleSpiceChange("Onion Powder")}
+                                                />
+                                            } 
+                                            label="Onion Powder" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Paprika"] || false}
+                                                    onChange={handleSpiceChange("Paprika")}
+                                                />
+                                            } 
+                                            label="Paprika" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Chili Powder"] || false}
+                                                    onChange={handleSpiceChange("Chili Powder")}
+                                                />
+                                            } 
+                                            label="Chili Powder" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Cumin"] || false}
+                                                    onChange={handleSpiceChange("Cumin")}
+                                                />
+                                            } 
+                                            label="Cumin" 
+                                        />
                                     </Stack>
                                 </Grid>
                                 <Grid item xs={12} md={3}>
                                     <Stack>
-                                        <FormControlLabel control={<Checkbox />} label="Basil" />
-                                        <FormControlLabel control={<Checkbox />} label="Thyme" />
-                                        <FormControlLabel control={<Checkbox />} label="Rosemary" />
-                                        <FormControlLabel control={<Checkbox />} label="Cayenne Pepper" />
-                                        <FormControlLabel control={<Checkbox />} label="Turmeric" />
-                                        <FormControlLabel control={<Checkbox />} label="Coriander" />
-                                        <FormControlLabel control={<Checkbox />} label="Parsley" />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Basil"] || false}
+                                                    onChange={handleSpiceChange("Basil")}
+                                                />
+                                            } 
+                                            label="Basil" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Thyme"] || false}
+                                                    onChange={handleSpiceChange("Thyme")}
+                                                />
+                                            } 
+                                            label="Thyme" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Rosemary"] || false}
+                                                    onChange={handleSpiceChange("Rosemary")}
+                                                />
+                                            } 
+                                            label="Rosemary" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Cayenne Pepper"] || false}
+                                                    onChange={handleSpiceChange("Cayenne Pepper")}
+                                                />
+                                            } 
+                                            label="Cayenne Pepper" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Turmeric"] || false}
+                                                    onChange={handleSpiceChange("Turmeric")}
+                                                />
+                                            } 
+                                            label="Turmeric" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Coriander"] || false}
+                                                    onChange={handleSpiceChange("Coriander")}
+                                                />
+                                            } 
+                                            label="Coriander" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Parsley"] || false}
+                                                    onChange={handleSpiceChange("Parsley")}
+                                                />
+                                            } 
+                                            label="Parsley" 
+                                        />
                                     </Stack>
                                 </Grid>
                                 <Grid item xs={12} md={3}>
                                     <Stack>
-                                        <FormControlLabel control={<Checkbox />} label="Cinnamon" />
-                                        <FormControlLabel control={<Checkbox />} label="Nutmeg" />
-                                        <FormControlLabel control={<Checkbox />} label="Red Pepper Flakes" />
-                                        <FormControlLabel control={<Checkbox />} label="Bay Leaves" />
-                                        <FormControlLabel control={<Checkbox />} label="Cardamom" />
-                                        <FormControlLabel control={<Checkbox />} label="Sage" />
-                                        <FormControlLabel control={<Checkbox />} label="Dill" />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Cinnamon"] || false}
+                                                    onChange={handleSpiceChange("Cinnamon")}
+                                                />
+                                            } 
+                                            label="Cinnamon" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Nutmeg"] || false}
+                                                    onChange={handleSpiceChange("Nutmeg")}
+                                                />
+                                            } 
+                                            label="Nutmeg" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Red Pepper Flakes"] || false}
+                                                    onChange={handleSpiceChange("Red Pepper Flakes")}
+                                                />
+                                            } 
+                                            label="Red Pepper Flakes" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Bay Leaves"] || false}
+                                                    onChange={handleSpiceChange("Bay Leaves")}
+                                                />
+                                            } 
+                                            label="Bay Leaves" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Cardamom"] || false}
+                                                    onChange={handleSpiceChange("Cardamom")}
+                                                />
+                                            } 
+                                            label="Cardamom" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Sage"] || false}
+                                                    onChange={handleSpiceChange("Sage")}
+                                                />
+                                            } 
+                                            label="Sage" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Dill"] || false}
+                                                    onChange={handleSpiceChange("Dill")}
+                                                />
+                                            } 
+                                            label="Dill" 
+                                        />
                                     </Stack>
                                 </Grid>
                                 <Grid item xs={12} md={3}>
                                     <Stack>
-                                        <FormControlLabel control={<Checkbox />} label="Cloves" />
-                                        <FormControlLabel control={<Checkbox />} label="Fennel Seeds" />
-                                        <FormControlLabel control={<Checkbox />} label="Allspice" />
-                                        <FormControlLabel control={<Checkbox />} label="Curry Powder" />
-                                        <FormControlLabel control={<Checkbox />} label="Tarragon" />
-                                        <FormControlLabel control={<Checkbox />} label="White Pepper" />
-                                        <FormControlLabel control={<Checkbox />} label="Saffron" />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Cloves"] || false}
+                                                    onChange={handleSpiceChange("Cloves")}
+                                                />
+                                            } 
+                                            label="Cloves" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Fennel Seeds"] || false}
+                                                    onChange={handleSpiceChange("Fennel Seeds")}
+                                                />
+                                            } 
+                                            label="Fennel Seeds" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Allspice"] || false}
+                                                    onChange={handleSpiceChange("Allspice")}
+                                                />
+                                            } 
+                                            label="Allspice" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Curry Powder"] || false}
+                                                    onChange={handleSpiceChange("Curry Powder")}
+                                                />
+                                            } 
+                                            label="Curry Powder" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Tarragon"] || false}
+                                                    onChange={handleSpiceChange("Tarragon")}
+                                                />
+                                            } 
+                                            label="Tarragon" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["White Pepper"] || false}
+                                                    onChange={handleSpiceChange("White Pepper")}
+                                                />
+                                            } 
+                                            label="White Pepper" 
+                                        />
+                                        <FormControlLabel 
+                                            control={
+                                                <Checkbox 
+                                                    checked={spiceStates["Saffron"] || false}
+                                                    onChange={handleSpiceChange("Saffron")}
+                                                />
+                                            } 
+                                            label="Saffron" 
+                                        />
                                     </Stack>
                                 </Grid>
                             </Grid>
