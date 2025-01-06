@@ -34,6 +34,7 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
+
 interface InfoItem {
     name: string;
     purchaseDate: string;
@@ -116,7 +117,7 @@ export default function Page() {
         };
 
         fetchIngredients();
-    }, []);
+    }, [isLoaded, isSignedIn, user]);
 
     const handleSpiceChange = (spiceName: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
         setSpiceStates(prev => ({
@@ -253,10 +254,10 @@ export default function Page() {
                         >
                             {Object.entries(ingredients).map(([ingredient, data]) => (
                                 <Stack key={ingredient} direction="row" justifyContent={"space-between"} borderBottom={""}>
-                                    <Typography className="pt-1.5">{data.amount} {ingredient}</Typography>
+                                    <Typography className="pt-1.5">{data.amount} - {ingredient}</Typography>
                                     <Stack direction="row">
                                         <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">
-                                            Date Purchased: {data.purchaseDate}
+                                            Purchase Date: {data.purchaseDate}
                                         </Typography>
                                         <Typography alignContent="center" className="pl-2 pr-2 ml-2 text-black mr-2">
                                             Expiration Date: {data.expirationDate}

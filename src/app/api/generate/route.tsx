@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     });
 
     const response = await result.response;
-    const textResponse = response.text();
+    const textResponse = await response.text();
 
     // Assuming the response is JSON, parse it
     const information = JSON.parse(textResponse);

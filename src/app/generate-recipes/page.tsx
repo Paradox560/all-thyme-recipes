@@ -1,10 +1,13 @@
 'use client'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Oooh_Baby } from "next/font/google";
-import { Typography, Box, Stack, Button } from "@mui/material";
-import Tile from "./tile";
+import { Typography, Box, Stack, Button, Alert } from "@mui/material";
 import Navbar from "../components/Navbar";
 import { Jost } from "next/font/google";
+import { useUser } from '@clerk/nextjs';
+import { db } from '@/firebase';
+import { doc, collection, getDoc } from 'firebase/firestore';
+import RecipeCard from './recipeCard';
 
 const oooh_baby = Oooh_Baby({
     weight: '400',
@@ -13,16 +16,150 @@ const oooh_baby = Oooh_Baby({
 });
 
 const jost = Jost({
-    weight: ['300','400','500'],
+    weight: ['300', '400', '500'],
     subsets: ['latin'],
-  })
+});
+
+interface IngredientData {
+    amount: string;
+    purchaseDate: string;
+    expirationDate: string;
+}
+
+interface RecipeData {
+    name: string;
+    image: string;
+    description: string;
+    additionalIngredients?: string;
+    link: string;
+}
 
 export default function Page() {
     const [showRecipes, setShowRecipes] = useState(false);
+    const [ingredients, setIngredients] = useState<Record<string, IngredientData>>({});
+    const [data, setData] = useState<RecipeData[]>([]);
+    const [spiceStates, setSpiceStates] = useState<string[]>([]);
+    const [error, setError] = useState<string>('');
+
+    const { isLoaded, isSignedIn, user } = useUser();
+
+    const currentIngredientRecipePrompt = `
+        You are a food specialist, you take in all of the ingredients and their respective expiration dates and return a list of recipes that can be made with these ingredients.
+        Try to prioritize including the items with the earliest expiration dates but this is not a hard requirement, you can choose from any of the ingredients provided but only these.
+        The "name" should be the name of the meal, the "image" should be the image of the meal in the form of the image address that can be used in a Image tag,
+        the "description" should be the description of the meal, and finally the "link" is the link to the recipe website with steps to make the meal.
+        You should return in the following JSON format:
+        {
+            info:[
+                {
+                    "name": str,
+                    "image": str,
+                    "description": str,
+                    "link": str
+                }
+            ]
+        }
+    `
+
+    const additionalIngredientRecipePrompt = `
+        You are a food specialist, you take in all of the spices and ingredients and their respective expiration dates and return a list of recipes that can be made with these ingredients.
+        Try to prioritize including the items with the earliest expiration dates but this is not a hard requirement, you must choose an ingredient from the ones listed but you can also add any additional ingredients you want.
+        The "name" should be the name of the meal, the "image" should be the image of the meal in the form of the image address that can be used in a Image tag, the "description" should be the description of the meal,
+        the "additionalIngredients" should be the comma separated string of additional ingredients needed for this meal, and finally the "link" is the link to the recipe website with steps to make the meal.
+        You should return in the following JSON format:
+        {
+            info:[
+                {
+                    "name": str,
+                    "image": str,
+                    "description": str,
+                    "additionalIngredients": str,
+                    "link": str
+                }
+            ]
+        }
+    `
+
+    useEffect(() => {
+        const fetchIngredients = async () => {
+            if (!isLoaded || !isSignedIn || !user) {
+                return;
+            }
+
+            const docRef = doc(collection(db, 'users'), user?.id);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                setIngredients(docSnap.data().ingredients || {});
+            }
+
+            if (docSnap.exists() && docSnap.data().spices) {
+                const spicesObj = docSnap.data().spices;
+                const activeSpices = Object.entries(spicesObj)
+                    .filter(([_, value]) => value === true)
+                    .map(([key, _]) => key);
+                setSpiceStates(activeSpices);
+            }
+        };
+
+        fetchIngredients();
+    }, [isLoaded, isSignedIn, user]);
 
     const handleClick = () => {
         setShowRecipes(true);
     };
+
+    const handleRecipeGeneration = async (systemPrompt: string, userPrompt: string) => {
+        const requestBody = {
+            systemPrompt: systemPrompt,
+            userPrompt: userPrompt
+        };
+
+        const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        const data = await response.json();
+        return data;
+    };
+
+    const createRecipeParameters = async (additional: boolean) => {
+        try {
+            const ingredientList = Object.entries(ingredients).map(([name, data]) => 
+                `${name}: ${data.expirationDate}`
+            );
+    
+            if (ingredientList.length === 0) {
+                setError('No ingredients available to generate recipes.');
+                return;
+            }
+    
+            const userPrompt = [...ingredientList, ...spiceStates].join(', ');
+            let recipeData;
+    
+            if (additional) {
+                recipeData = await handleRecipeGeneration(additionalIngredientRecipePrompt, userPrompt);
+            } else {
+                recipeData = await handleRecipeGeneration(currentIngredientRecipePrompt, userPrompt);
+            }
+    
+            // Ensure recipeData is in the correct format
+            if (!recipeData.info || !Array.isArray(recipeData.info)) {
+                throw new Error('Recipe data is not in correct format');
+            }
+    
+            setData(recipeData.info);
+            setError('');
+            setShowRecipes(true);
+        } catch (err) {
+            setError('Failed to generate recipes');
+            setData([]);
+        }
+    }
 
     return (
         <div style={{ minHeight: '100vh', width: '100%', backgroundColor: '#3D5926' }}>
@@ -49,109 +186,62 @@ export default function Page() {
 
                 <Box sx={{ padding: '16px', minHeight: '75px', overflow: 'auto' }}>
                     <Box sx={{ display: 'flex', overflowX: 'auto', whiteSpace: 'nowrap' }}>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
+                    {Object.entries(ingredients).map(([ingredient, data]) => (
+                        <Box key={ingredient} sx={{ minWidth: '100px', marginRight: '16px' }}>
                             <Stack>
-                                <Typography>Eggs</Typography>
-                                <Typography>09/27</Typography>
+                                <Typography>{ingredient}</Typography>
+                                <Typography>{data.purchaseDate}</Typography>
                             </Stack>
                         </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Milk</Typography>
-                                <Typography>09/30</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Butter</Typography>
-                                <Typography>10/05</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Cheese</Typography>
-                                <Typography>10/01</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Bread</Typography>
-                                <Typography>09/29</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Tomatoes</Typography>
-                                <Typography>09/25</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Lettuce</Typography>
-                                <Typography>09/27</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Beef</Typography>
-                                <Typography>10/02</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Chicken</Typography>
-                                <Typography>09/28</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Eggplant</Typography>
-                                <Typography>10/19</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Fish</Typography>
-                                <Typography>10/01</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Potatoes</Typography>
-                                <Typography>12/07</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Spaghetti</Typography>
-                                <Typography>05/18</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Onions</Typography>
-                                <Typography>06/10</Typography>
-                            </Stack>
-                        </Box>
-                        <Box sx={{ minWidth: '100px', marginRight: '16px' }}>
-                            <Stack>
-                                <Typography>Bell Peppers</Typography>
-                                <Typography>12/21</Typography>
+                    ))}
+                    </Box>
+                </Box>
+            </Box>
+            
+            <Box>
+                {error ? (<Alert sx={{margin: '2px 40px'}} severity="error">{error}</Alert>) :
+                showRecipes && (
+                <Box 
+                    sx={{ 
+                        margin: '2px 40px', 
+                        backgroundColor: '#FDEDD6', 
+                        color: 'black',
+                        border: '3px solid black',
+                        borderRadius: '8px',
+                    }}
+                >
+                    <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', textAlign: 'center', fontFamily: jost.style.fontFamily }}>
+                        Recipes
+                    </Typography>
+                    <Box sx={{ padding: '16px', minHeight: '340px', overflow: 'auto' }}>
+                        <Box sx={{ display: 'flex', overflowX: 'auto', whiteSpace: 'nowrap', padding: '0px' }}>
+                            <Stack direction="row" sx={{ padding: '8px' }}>
+                                {data?.map((recipe, index) => (
+                                    <RecipeCard
+                                        key={index}
+                                        title={recipe.name}
+                                        image={recipe.image}
+                                        description={recipe.description}
+                                        link={recipe.link}
+                                        additionalIngredients={recipe.additionalIngredients}
+                                    />
+                                ))}
                             </Stack>
                         </Box>
                     </Box>
                 </Box>
-            </Box>
-            {!showRecipes && (
-                <div style={{ textAlign: 'center', padding: '16px' }}>
+                )}
+
+                <Box style={{ textAlign: 'center', padding: '16px' }}>
                     <Stack direction='row' justifyContent={'space-evenly'}>
                         <Button 
                             sx={{ 
                                 backgroundColor: '#B37238',
                                 color: '#FDEDD6',
+                                fontFamily: jost.style.fontFamily,
                                 '&:hover': { backgroundColor: '#9e5e24' } 
                             }} 
-                            onClick={handleClick}
+                            onClick={() => createRecipeParameters(false)}
                         >
                             Generate Recipe with Current Ingredients
                         </Button>
@@ -159,163 +249,16 @@ export default function Page() {
                             sx={{ 
                                 backgroundColor: '#B37238',
                                 color: '#FDEDD6',
+                                fontFamily: jost.style.fontFamily,
                                 '&:hover': { backgroundColor: '#9e5e24' } 
                             }} 
-                            onClick={handleClick}
+                            onClick={() => createRecipeParameters(true)}
                         >
                             Suggest Recipe with Additional Ingredients
                         </Button>
                     </Stack> 
-                </div>
-            )}
-
-            {showRecipes && (
-                <Box>
-                    <Box 
-                        sx={{ 
-                            margin: '2px 40px', 
-                            backgroundColor: '#FDEDD6', 
-                            color: 'black',
-                            border: '3px solid black',
-                            borderRadius: '8px',
-                        }}
-                    >
-                        <Typography variant="h6" sx={{ marginLeft: '8px', marginTop: '8px', textAlign: 'center', fontFamily: jost.style.fontFamily }}>
-                            Recipes
-                        </Typography>
-                        <Box sx={{ padding: '16px', minHeight: '340px', overflow: 'auto' }}>
-                            <Box sx={{ display: 'flex', overflowX: 'auto', whiteSpace: 'nowrap', padding: '0px' }}>
-                                <Stack direction="row" sx={{ padding: '8px' }}>
-                                    <Box sx={{ padding: '16px' }}>
-                                    <Box 
-            className="bg-themeBlue rounded-md text-black p-2"
-            minHeight={290} 
-            maxHeight={250} 
-            minWidth={375} 
-            maxWidth={375} 
-            sx={{
-                overflowY: 'auto',  // Enable vertical scrolling within each tile
-                wordWrap: 'break-word',
-                wordBreak: 'break-word',
-                whiteSpace: 'normal',
-                border: '1.5px solid #000',
-                borderRadius: '8px'
-            }}
-        >
-            <Stack justifyContent={"space-between"}>
-                <Typography style={{marginTop: "-2.7rem", fontFamily: jost.style.fontFamily, fontWeight: 400, fontSize: "1.3rem"}} >Chicken Fajitas</Typography>
-                <img src="/download.jpg"></img>
-                <Typography>Description: Experience a burst of flavors with our Chicken Fajitas, where juicy, well-seasoned chicken melds perfectly with sweet bell peppers and smoky spices, all brightened by a splash of fresh lime and creamy avocado for an irresistible taste sensation.</Typography>
-                <Typography>Link: https://www.spendwithpennies.com/easy-chicken-fajitas/</Typography>
-            </Stack>
-        </Box>
-                                    </Box>
-                                    <Box sx={{ padding: '16px' }}>
-                                    <Box 
-            className="bg-themeBlue rounded-md text-black p-2"
-            minHeight={290} 
-            maxHeight={250} 
-            minWidth={375} 
-            maxWidth={375} 
-            sx={{
-                overflowY: 'auto',  // Enable vertical scrolling within each tile
-                wordWrap: 'break-word',
-                wordBreak: 'break-word',
-                whiteSpace: 'normal',
-                border: '1.5px solid #000',
-                borderRadius: '8px'
-            }}
-        >
-            <Stack justifyContent={"space-between"}>
-                <Typography style={{marginTop: "-2.7rem", fontFamily: jost.style.fontFamily, fontWeight: 400, fontSize: "1.3rem"}} >Beef and Potato Hash</Typography>
-                <img src="/beef-and-potato.jpg"></img>
-                <Typography>Description: A beef and potato hash is a savory dish made by sautéing ground beef with diced, crispy potatoes, onions, and bell peppers until everything is tender and golden brown. The flavors blend together to create a hearty, flavorful meal that is perfect for breakfast or dinner.</Typography>
-                <Typography>Link: https://busycooks.com/ground-beef-potato-hash/</Typography>
-            </Stack>
-        </Box>
-                                    </Box>
-                                    <Box sx={{ padding: '16px' }}>
-                                    <Box 
-            className="bg-themeBlue rounded-md text-black p-2"
-            minHeight={290} 
-            maxHeight={250} 
-            minWidth={375} 
-            maxWidth={375} 
-            sx={{
-                overflowY: 'auto',  // Enable vertical scrolling within each tile
-                wordWrap: 'break-word',
-                wordBreak: 'break-word',
-                whiteSpace: 'normal',
-                border: '1.5px solid #000',
-                borderRadius: '8px'
-            }}
-        >
-            <Stack justifyContent={"space-between"}>
-                <Typography style={{marginTop: "-2.7rem", fontFamily: jost.style.fontFamily, fontWeight: 400, fontSize: "1.3rem"}} >Egg Fried Rice</Typography>
-                <img src="/egg-fried-rice.jpg" ></img>
-                <Typography>Egg fried rice is a delicious dish made by stir-frying fluffy rice with scrambled eggs, onions, and bell peppers, creating a simple yet flavorful combination. The eggs coat the rice with a savory richness, while the vegetables add a hint of sweetness and crunch.
-</Typography>
-                <Typography >Link: https://www.allrecipes.com/recipe/23298/egg-fried-rice/</Typography>
-            </Stack>
-        </Box>
-                                    </Box>
-                                    <Box sx={{ padding: '16px' }}>
-                                    <Box 
-            className="bg-themeBlue rounded-md text-black p-2"
-            minHeight={290} 
-            maxHeight={250} 
-            minWidth={375} 
-            maxWidth={375} 
-            sx={{
-                overflowY: 'auto',  // Enable vertical scrolling within each tile
-                wordWrap: 'break-word',
-                wordBreak: 'break-word',
-                whiteSpace: 'normal',
-                border: '1.5px solid #000',
-                borderRadius: '8px'
-            }}
-        >
-            <Stack justifyContent={"space-between"}>
-                <Typography style={{marginTop: "-2.7rem", fontFamily: jost.style.fontFamily, fontWeight: 400, fontSize: "1.3rem"}} >Fish Tacos</Typography>
-                <img src="/fish-tacos.jpg"></img>
-                <Typography>Description: Fish tacos are a flavorful dish featuring tender, seasoned fish fillets wrapped in a soft tortilla or bread, topped with fresh lettuce, juicy tomatoes, and crunchy onions. The combination of the flaky fish and crisp vegetables creates a refreshing and satisfying bite with every taste.
-</Typography>
-                <Typography>Link: https://natashaskitchen.com/fish-tacos-recipe/</Typography>
-            </Stack>
-        </Box>
-                                    </Box>
-                                </Stack>
-                            </Box>
-                        </Box>
-                    </Box>
-                    <Box style={{ textAlign: 'center', padding: '16px' }}>
-                        <Stack direction='row' justifyContent={'space-evenly'}>
-                            <Button 
-                                sx={{ 
-                                    backgroundColor: '#B37238',
-                                    color: '#FDEDD6',
-                                    fontFamily: jost.style.fontFamily,
-                                    '&:hover': { backgroundColor: '#9e5e24' } 
-                                }} 
-                                onClick={handleClick}
-                            >
-                                Generate Recipe with Current Ingredients
-                            </Button>
-                            <Button 
-                                sx={{ 
-                                    backgroundColor: '#B37238',
-                                    color: '#FDEDD6',
-                                    fontFamily: jost.style.fontFamily,
-                                    '&:hover': { backgroundColor: '#9e5e24' } 
-                                }} 
-                                onClick={handleClick}
-                            >
-                                Suggest Recipe with Additional Ingredients
-                            </Button>
-                        </Stack> 
-                    </Box>
                 </Box>
-            )}
+            </Box>
         </div>
     );
 }
