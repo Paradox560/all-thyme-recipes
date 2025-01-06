@@ -199,7 +199,7 @@ export default function Page() {
             </Box>
             
             <Box>
-                {error ? (<Alert sx={{margin: '2px 40px'}} severity="error">{error}</Alert>) :
+                {error ? (<Alert sx={{margin: '2px 40px', border: '3px solid black'}} severity="error">{error}</Alert>) :
                 showRecipes && (
                 <Box 
                     sx={{ 
