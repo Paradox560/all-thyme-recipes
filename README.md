@@ -1,5 +1,9 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Project Overview
+
+This project is a recipe generation website that helps users manage their ingredients and spices, and generate recipes based on the available items. The application is built using [Next.js](https://nextjs.org) and integrates with Firebase for data storage.
+
 ## Getting Started
 
 First, run the development server:
@@ -16,9 +20,26 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How to Use the Application
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Step 1: Add Ingredients
+
+1. Navigate to the home page.
+2. Click on the "ADD INGREDIENT" button.
+3. Fill in the details for the new ingredient, including the name, quantity, and purchase date.
+4. Click "Add" to save the ingredient.
+
+### Step 2: Select Spices
+
+1. On the home page, scroll to the "Spices & Seasonings" section.
+2. Check the boxes next to the spices you have available.
+3. Click "Update Spices" to save your selections.
+
+### Step 3: Generate Recipes
+
+1. Navigate to the "Generate Recipes" page.
+2. Click "Generate Recipe with Current Ingredients" to get recipes using only the ingredients you have.
+3. Alternatively, click "Suggest Recipe with Additional Ingredients" to get recipes that may include additional ingredients.
 
 ## Learn More
 
