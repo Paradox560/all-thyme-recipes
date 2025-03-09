@@ -47,7 +47,7 @@ export default function Page() {
   const { isLoaded, isSignedIn, user } = useUser();
 
   const currentIngredientRecipePrompt = `
-        You are a food specialist, you take in all of the ingredients and their respective expiration dates and return a list of recipes that can be made with these ingredients.
+        You are a food specialist, you take in all of the ingredients and their respective expiration dates and return a list of at least 4 recipes that can be made with these ingredients.
         Try to prioritize including the items with the earliest expiration dates but this is not a hard requirement, you can choose from any of the ingredients provided but only these.
         The "name" should be the name of the meal, the "image" should be the image of the meal in the form of the image address that can be used in a Image tag,
         the "description" should be the description of the meal, and finally the "link" is the link to the recipe website with steps to make the meal and
@@ -67,7 +67,7 @@ export default function Page() {
     `;
 
   const additionalIngredientRecipePrompt = `
-        You are a food specialist, you take in all of the spices and ingredients and their respective expiration dates and return a list of recipes that can be made with these ingredients.
+        You are a food specialist, you take in all of the spices and ingredients and their respective expiration dates and return a list of at least 4 recipes that can be made with these ingredients.
         Try to prioritize including the items with the earliest expiration dates but this is not a hard requirement, you must choose an ingredient from the ones listed but you can also add any additional ingredients you want.
         The "name" should be the name of the meal, the "image" should be the image of the meal in the form of the image address that can be used in a Image tag, the "description" should be the description of the meal,
         the "additionalIngredients" should be the comma separated string of additional ingredients needed for this meal, and finally the "link" is the link to the recipe website with steps to make the meal and

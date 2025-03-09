@@ -63,9 +63,9 @@ const RecipeCard = ({
               Additional Ingredients Needed: {additionalIngredients}
             </Typography>
           )}
-          <Typography>Link: {link}</Typography>
+          {/* <Typography>Link: {link}</Typography> */}
           <Button variant="contained" onClick={handleOpen}>
-            See More
+            See Recipe Info
           </Button>
         </Stack>
       </Box>
